@@ -3,9 +3,9 @@
 use strict;
 use warnings;
 
-use PDL::LiteF;
-use PDL::Stats;
-use PDL::NiceSlice;
+use PDLA::LiteF;
+use PDLA::Stats;
+use PDLA::NiceSlice;
 use Test::More;
 
 BEGIN {
@@ -17,7 +17,7 @@ sub tapprox {
   $eps ||= 1e-6;
   my $diff = abs($a-$b);
     # use max to make it perl scalar
-  ref $diff eq 'PDL' and $diff = $diff->max;
+  ref $diff eq 'PDLA' and $diff = $diff->max;
   return $diff < $eps;
 }
 

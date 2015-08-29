@@ -8,14 +8,14 @@ BEGIN {
     plan tests => 4;
 }
 
-use PDL::LiteF;
-use PDL::GSL::CDF;
+use PDLA::LiteF;
+use PDLA::GSL::CDF;
 
 sub tapprox {
   my($a,$b) = @_;
   my $diff = abs($a-$b);
     # use max to make it perl scalar
-  ref $diff eq 'PDL' and $diff = $diff->max;
+  ref $diff eq 'PDLA' and $diff = $diff->max;
   return $diff < 1.0e-6;
 }
 {

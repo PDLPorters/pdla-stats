@@ -6,18 +6,18 @@ use Test::More;
 
 BEGIN {
     plan tests => 23;
-    use_ok( 'PDL::Stats::TS' );
+    use_ok( 'PDLA::Stats::TS' );
 }
 
-use PDL::LiteF;
-use PDL::NiceSlice;
+use PDLA::LiteF;
+use PDLA::NiceSlice;
 
 sub tapprox {
   my($a,$b, $eps) = @_;
   $eps ||= 1e-6;
   my $diff = abs($a-$b);
     # use max to make it perl scalar
-  ref $diff eq 'PDL' and $diff = $diff->max;
+  ref $diff eq 'PDLA' and $diff = $diff->max;
   return $diff < $eps;
 }
 

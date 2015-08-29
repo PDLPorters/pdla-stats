@@ -4,15 +4,15 @@ pp_add_exported('', 'random_cluster', 'iv_cluster');
 pp_addpm({At=>'Top'}, <<'EOD');
 
 use Carp;
-use PDL::LiteF;
-use PDL::NiceSlice;
-use PDL::Stats::Basic;
+use PDLA::LiteF;
+use PDLA::NiceSlice;
+use PDLA::Stats::Basic;
 
-$PDL::onlinedoc->scan(__FILE__) if $PDL::onlinedoc;
+$PDLA::onlinedoc->scan(__FILE__) if $PDLA::onlinedoc;
 
 =head1 NAME
 
-PDL::Stats::Kmeans -- classic k-means cluster analysis 
+PDLA::Stats::Kmeans -- classic k-means cluster analysis 
 
 =head1 DESCRIPTION
 
@@ -24,9 +24,9 @@ The terms FUNCTIONS and METHODS are arbitrarily used to refer to methods that ar
 
 Implement a basic k-means procedure,
  
-    use PDL::LiteF;
-    use PDL::NiceSlice;
-    use PDL::Stats;
+    use PDLA::LiteF;
+    use PDLA::NiceSlice;
+    use PDLA::Stats;
 
     my ($data, $idv, $ido) = rtable( $file );
 
@@ -50,7 +50,7 @@ or, use the B<kmeans> function provided here,
 
 plot the clusters if there are only 2 vars in $data,
 
-    use PDL::Graphics::PGPLOT::Window;
+    use PDLA::Graphics::PGPLOT::Window;
 
     my ($win, $c);
     $win = pgwin 'xs';
@@ -75,7 +75,7 @@ pp_addhdr('
 
 pp_addpm( <<'EOD' );
 
-# my tmp var for PDL 2.007 slice upate
+# my tmp var for PDLA 2.007 slice upate
 my $_tmp;
 
 =head2 random_cluster
@@ -101,7 +101,7 @@ sub random_cluster {
   my $cluster = zeroes @_;
   do {
     $cluster->inplace->_random_cluster();
-  } while (PDL::any $cluster->sumover == 0 );
+  } while (PDLA::any $cluster->sumover == 0 );
   return $cluster;
 }
 
@@ -533,7 +533,7 @@ Default options (case insensitive):
   V     => 1,         # prints simple status
   FULL  => 0,         # returns results for all seeding trials
 
-  CNTRD => PDL->null, # optional. pdl [clu x var]. disables next 3 opts
+  CNTRD => PDLA->null, # optional. pdl [clu x var]. disables next 3 opts
 
   NTRY  => 5,         # num of random seeding trials
   NSEED => 1000,      # num of initial seeds, use NSEED up to max obs
@@ -605,14 +605,14 @@ Now, for the valiant, kmeans is threadable. Say you gathered 10 persons' ratings
 
 =cut
 
-*kmeans = \&PDL::kmeans;
-sub PDL::kmeans {
+*kmeans = \&PDLA::kmeans;
+sub PDLA::kmeans {
   my ($self, $opt) = @_;
   my %opt = (
     V     => 1,         # prints simple status
     FULL  => 0,         # returns results for all seeding trials
   
-    CNTRD => PDL->null, # optional. pdl [clu x var]. disables next 3 opts
+    CNTRD => PDLA->null, # optional. pdl [clu x var]. disables next 3 opts
   
     NTRY  => 5,         # num of random seeding trials
     NSEED => 1000,      # num of initial seeds, use NSEED up to max obs
@@ -665,11 +665,11 @@ sub PDL::kmeans {
 
   $opt{FULL} and 
     return (
-      centroid => PDL::squeeze( $centroid ),
-      cluster  => PDL::squeeze( $clus_this ),
-      n        => PDL::squeeze( $clus_this )->sumover,
-      R2       => PDL::squeeze( $R2 ), 
-      $ss_ms   => PDL::squeeze( $ss_cv ),
+      centroid => PDLA::squeeze( $centroid ),
+      cluster  => PDLA::squeeze( $clus_this ),
+      n        => PDLA::squeeze( $clus_this )->sumover,
+      R2       => PDLA::squeeze( $R2 ), 
+      $ss_ms   => PDLA::squeeze( $ss_cv ),
     );
 
     # xchg/mv(-1,0) leaves it as was if single dim--unlike transpose
@@ -755,19 +755,19 @@ Usage:
 
 =cut
 
-*iv_cluster = \&PDL::iv_cluster;
-sub PDL::iv_cluster {
+*iv_cluster = \&PDLA::iv_cluster;
+sub PDLA::iv_cluster {
   my ($var_ref) = @_;
 
     # pdl->uniq puts elem in order. so instead list it to maintain old order
-  if (ref $var_ref eq 'PDL') {
+  if (ref $var_ref eq 'PDLA') {
     $var_ref = $var_ref->squeeze;
     $var_ref->getndims > 1 and
       croak "multidim pdl passed for single var!";
     $var_ref = [ list $var_ref ];
   }
 
-  my ($var, $map_ref) = PDL::Stats::Basic::_array_to_pdl( $var_ref );
+  my ($var, $map_ref) = PDLA::Stats::Basic::_array_to_pdl( $var_ref );
   my $var_a = zeroes( short, $var->nelem, $var->max + 1 );
 
   for my $l (0 .. $var->max) {
@@ -815,8 +815,8 @@ Usage:
 
 =cut
 
-*pca_cluster = \&PDL::pca_cluster;
-sub PDL::pca_cluster {
+*pca_cluster = \&PDLA::pca_cluster;
+sub PDLA::pca_cluster {
   my ($self, $opt) = @_;
 
   my %opt = (
@@ -838,7 +838,7 @@ sub PDL::pca_cluster {
     $opt{NCOMP} = _scree_ind( $var );
   }
   $opt{PLOT} and do {
-    require PDL::Stats::GLM;
+    require PDLA::Stats::GLM;
     $var->plot_scree( {NCOMP=>$var->dim(0), CUT=>$opt{NCOMP}} );
   };
 
@@ -871,7 +871,7 @@ Wikipedia (retrieved June, 2009). K-means clustering. http://en.wikipedia.org/wi
 
 Copyright (C) 2009 Maggie J. Xiong <maggiexyz users.sourceforge.net>
 
-All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDL distribution.
+All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDLA distribution.
 
 =cut
 

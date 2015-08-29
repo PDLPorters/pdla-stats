@@ -8,23 +8,23 @@ use strict;
 use warnings;
 
 use Carp;
-use PDL::LiteF;
-use PDL::MatrixOps;
-use PDL::NiceSlice;
-use PDL::Stats::Basic;
-use PDL::Stats::Kmeans;
+use PDLA::LiteF;
+use PDLA::MatrixOps;
+use PDLA::NiceSlice;
+use PDLA::Stats::Basic;
+use PDLA::Stats::Kmeans;
 
-$PDL::onlinedoc->scan(__FILE__) if $PDL::onlinedoc;
+$PDLA::onlinedoc->scan(__FILE__) if $PDLA::onlinedoc;
 
-eval { require PDL::GSL::CDF; };
+eval { require PDLA::GSL::CDF; };
 my $CDF = 1 if !$@;
 
-eval { require PDL::Slatec; };
+eval { require PDLA::Slatec; };
 my $SLATEC = 1 if !$@;
 
 eval {
-  require PDL::Graphics::PGPLOT::Window;
-  PDL::Graphics::PGPLOT::Window->import( 'pgwin' );
+  require PDLA::Graphics::PGPLOT::Window;
+  PDLA::Graphics::PGPLOT::Window->import( 'pgwin' );
 };
 my $PGPLOT = 1 if !$@;
 
@@ -32,19 +32,19 @@ my $DEV = ($^O =~ /win/i)? '/png' : '/xs';
 
 =head1 NAME
 
-PDL::Stats::GLM -- general and generalized linear modeling methods such as ANOVA, linear regression, PCA, and logistic regression.
+PDLA::Stats::GLM -- general and generalized linear modeling methods such as ANOVA, linear regression, PCA, and logistic regression.
 
 =head1 DESCRIPTION
 
-The terms FUNCTIONS and METHODS are arbitrarily used to refer to methods that are threadable and methods that are NOT threadable, respectively. FUNCTIONS except B<ols_t> support bad value. B<PDL::Slatec> strongly recommended for most METHODS, and it is required for B<logistic>.
+The terms FUNCTIONS and METHODS are arbitrarily used to refer to methods that are threadable and methods that are NOT threadable, respectively. FUNCTIONS except B<ols_t> support bad value. B<PDLA::Slatec> strongly recommended for most METHODS, and it is required for B<logistic>.
 
-P-values, where appropriate, are provided if PDL::GSL::CDF is installed.
+P-values, where appropriate, are provided if PDLA::GSL::CDF is installed.
 
 =head1 SYNOPSIS
 
-    use PDL::LiteF;
-    use PDL::NiceSlice;
-    use PDL::Stats::GLM;
+    use PDLA::LiteF;
+    use PDLA::NiceSlice;
+    use PDLA::Stats::GLM;
 
     # do a multiple linear regression and plot the residuals
 
@@ -101,11 +101,11 @@ pp_def('fill_m',
   ',
   CopyBadStatusCode => '
     /* propagate badflag if inplace AND it has changed */
-    if ( a == b && $ISPDLSTATEBAD(a) )
-      PDL->propagate_badflag( b, 0 );
+    if ( a == b && $ISPDLASTATEBAD(a) )
+      PDLA->propagate_badflag( b, 0 );
 
     /* always make sure the output is "good" */
-    $SETPDLSTATEGOOD(b);
+    $SETPDLASTATEGOOD(b);
 
   ',
   Doc      => '
@@ -168,11 +168,11 @@ pp_def('fill_rand',
   ',
   CopyBadStatusCode => '
     /* propagate badflag if inplace AND it has changed */
-    if ( a == b && $ISPDLSTATEBAD(a) )
-      PDL->propagate_badflag( b, 0 );
+    if ( a == b && $ISPDLASTATEBAD(a) )
+      PDLA->propagate_badflag( b, 0 );
 
     /* always make sure the output is "good" */
-    $SETPDLSTATEGOOD(b);
+    $SETPDLASTATEGOOD(b);
 
   ',
   Doc      => '
@@ -600,14 +600,14 @@ Deviance residual for logistic regression.
 
 pp_addpm(<<'EOD');
 
-# my tmp var for PDL 2.007 slice upate
+# my tmp var for PDLA 2.007 slice upate
 my $_tmp;
 
 =head2 ols_t
 
 =for ref
 
-Threaded version of ordinary least squares regression (B<ols>). The price of threading was losing significance tests for coefficients (but see B<r2_change>). The fitting function was shamelessly copied then modified from PDL::Fit::Linfit. Uses PDL::Slatec when possible but otherwise uses PDL::MatrixOps. Intercept is LAST of coeff if CONST => 1.
+Threaded version of ordinary least squares regression (B<ols>). The price of threading was losing significance tests for coefficients (but see B<r2_change>). The fitting function was shamelessly copied then modified from PDLA::Fit::Linfit. Uses PDLA::Slatec when possible but otherwise uses PDLA::MatrixOps. Intercept is LAST of coeff if CONST => 1.
 
 ols_t does not handle bad values. consider B<fill_m> or B<fill_rand> if there are bad values.
 
@@ -654,7 +654,7 @@ Usage:
     ]
 
     perldl> p $x->info
-    PDL: Double D [10,2,3]
+    PDLA: Double D [10,2,3]
 
     # insert a dummy dim between IV and the dim (model) to be threaded
 
@@ -730,8 +730,8 @@ Usage:
 
 =cut
 
-*ols_t = \&PDL::ols_t;
-sub PDL::ols_t {
+*ols_t = \&PDLA::ols_t;
+sub PDLA::ols_t {
     # y [n], ivs [n x attr] pdl
   my ($y, $ivs, $opt) = @_;
   my %opt = ( CONST => 1 );
@@ -756,14 +756,14 @@ sub PDL::ols_t {
   my $C;
 
   if ( $SLATEC ) {
-    $C = PDL::Slatec::matinv( $ivs x $ivs->xchg(0,1) );
+    $C = PDLA::Slatec::matinv( $ivs x $ivs->xchg(0,1) );
   }
   else {
     $C = inv( $ivs x $ivs->xchg(0,1) );
   }
 
     # Fitted coefficients vector
-  my $coeff = PDL::squeeze( $C x $Y );
+  my $coeff = PDLA::squeeze( $C x $Y );
 
   $coeff = $coeff->dummy(0)
     if $coeff->getndims == 1 and $y->getndims > 1;
@@ -788,7 +788,7 @@ sub PDL::ols_t {
   $ret{F_p} = 1 - $ret{F}->gsl_cdf_fdist_P( $ret{F_df}->dog )
     if $CDF;
 
-  for (keys %ret) { ref $ret{$_} eq 'PDL' and $ret{$_} = $ret{$_}->squeeze };
+  for (keys %ret) { ref $ret{$_} eq 'PDLA' and $ret{$_} = $ret{$_}->squeeze };
 
   $ret{b} = $coeff;
 
@@ -852,8 +852,8 @@ Usage:
 
 =cut
 
-*r2_change = \&PDL::r2_change;
-sub PDL::r2_change {
+*r2_change = \&PDLA::r2_change;
+sub PDLA::r2_change {
   my ($self, $ivs0, $ivs1, $opt) = @_;
   $ivs0->getndims == 1 and $ivs0 = $ivs0->dummy(1);
 
@@ -872,7 +872,7 @@ sub PDL::r2_change {
   $ret{F_p} = 1 - $ret{F_change}->gsl_cdf_fdist_P( $ret{F_df}->dog )
     if $CDF;
 
-  for (keys %ret) { ref $ret{$_} eq 'PDL' and $ret{$_} = $ret{$_}->squeeze };
+  for (keys %ret) { ref $ret{$_} eq 'PDLA' and $ret{$_} = $ret{$_}->squeeze };
 
   return %ret;
 }
@@ -977,8 +977,8 @@ Usage:
 
 =cut
 
-*anova = \&PDL::anova;
-sub PDL::anova {
+*anova = \&PDLA::anova;
+sub PDLA::anova {
   my $opt = pop @_
     if ref $_[-1] eq 'HASH';
   my ($y, @ivs_raw) = @_;
@@ -987,7 +987,7 @@ sub PDL::anova {
 
   for (@ivs_raw) {
     croak "too many dims in IV!"
-      if ref $_ eq 'PDL' and $_->squeeze->ndims > 1;
+      if ref $_ eq 'PDLA' and $_->squeeze->ndims > 1;
   }
 
   my %opt = (
@@ -1005,8 +1005,8 @@ sub PDL::anova {
   $y = $y->squeeze;
     # create new vars here so we don't mess up original caller @
   my @pdl_ivs_raw = map {
-    my $var = (ref $_ eq 'PDL')? [list $_] : $_;
-    scalar PDL::Stats::Basic::_array_to_pdl $var;
+    my $var = (ref $_ eq 'PDLA')? [list $_] : $_;
+    scalar PDLA::Stats::Basic::_array_to_pdl $var;
   } @ivs_raw;
 
   my $pdl_ivs_raw = pdl \@pdl_ivs_raw;
@@ -1029,7 +1029,7 @@ sub PDL::anova {
     = _add_interactions( $ivs_ref, $i_cmo_ref, \@idv, \@pdl_ivs_raw );
 
     # add const here
-  my $ivs = PDL->null->glue( 1, @$ivs_ref );
+  my $ivs = PDLA->null->glue( 1, @$ivs_ref );
   $ivs = $ivs->glue(1, ones $ivs->dim(0));
 
   my $b_full = $y->ols_t( $ivs, {CONST=>0} );
@@ -1051,7 +1051,7 @@ sub PDL::anova {
     @G = grep { $_ != $k } (0 .. $#$ivs_ref);
  
     if (@G) {
-      $G = PDL->null->glue( 1, @$ivs_ref[@G] );
+      $G = PDLA->null->glue( 1, @$ivs_ref[@G] );
       $G = $G->glue(1, ones $G->dim(0));
     }
     else {
@@ -1314,15 +1314,15 @@ For mixed model anova, ie when there are between-subject IVs involved, feed the 
  
 =cut
 
-*anova_rptd = \&PDL::anova_rptd;
-sub PDL::anova_rptd {
+*anova_rptd = \&PDLA::anova_rptd;
+sub PDLA::anova_rptd {
   my $opt = pop @_
     if ref $_[-1] eq 'HASH';
   my ($y, $subj, @ivs_raw) = @_;
 
   for (@ivs_raw) {
     croak "too many dims in IV!"
-      if ref $_ eq 'PDL' and $_->squeeze->ndims > 1
+      if ref $_ eq 'PDLA' and $_->squeeze->ndims > 1
   }
 
   my %opt = (
@@ -1340,8 +1340,8 @@ sub PDL::anova_rptd {
 
     # create new vars here so we don't mess up original caller @
   my ($sj, @pdl_ivs_raw)
-    = map { my $var = (ref $_ eq 'PDL')? [list $_] : $_;
-            scalar PDL::Stats::Basic::_array_to_pdl $var;
+    = map { my $var = (ref $_ eq 'PDLA')? [list $_] : $_;
+            scalar PDLA::Stats::Basic::_array_to_pdl $var;
           } ( $subj, @ivs_raw );
 
     # delete bad data listwise ie remove subj if any cell missing
@@ -1376,7 +1376,7 @@ sub PDL::anova_rptd {
     = _add_errors( $sj, $ivs_ref, $idv, \@pdl_ivs_raw, \%opt );
 
     # stitch together
-  my $ivs = PDL->null->glue( 1, @$ivs_ref );
+  my $ivs = PDLA->null->glue( 1, @$ivs_ref );
   $ivs = $ivs->glue(1, grep { defined($_) and ref($_) } @$err_ref);
   $ivs = $ivs->glue(1, ones $ivs->dim(0));
   my $b_full = $y->ols_t( $ivs, {CONST=>0} );
@@ -1408,7 +1408,7 @@ sub PDL::anova_rptd {
       next EFFECT
         unless @G;
   
-      $G = PDL->null->glue( 1, grep { ref $_ } @full[@G] );
+      $G = PDLA->null->glue( 1, grep { ref $_ } @full[@G] );
       $G = $G->glue(1, ones $G->dim(0));
       $b_G = $y->ols_t( $G, {CONST=>0} );
   
@@ -1447,7 +1447,7 @@ sub PDL::anova_rptd {
       if $CDF;
   }
 
-  for (keys %ret) {ref $ret{$_} eq 'PDL' and $ret{$_} = $ret{$_}->squeeze};
+  for (keys %ret) {ref $ret{$_} eq 'PDLA' and $ret{$_} = $ret{$_}->squeeze};
 
   my $cm_ref
     = _cell_means( $y, $ivs_cm_ref, $i_cmo_ref, $idv, \@pdl_ivs_raw );
@@ -1484,7 +1484,7 @@ sub _add_errors {
     $s .= $subj($n);               # keep track of total uniq subj
     $grp_s{$s} = 1;
   }
-  my $grp = PDL::Stats::Kmeans::iv_cluster \@grp;
+  my $grp = PDLA::Stats::Kmeans::iv_cluster \@grp;
 
   my $spdl = zeroes $subj->dim(0), keys(%grp_s) - $grp->dim(1);
   my ($d0, $d1) = (0, 0);
@@ -1538,7 +1538,7 @@ sub _add_errors {
       elsif (!@wn and $_ > $ie_subj)                           { $ie_subj }
         # repeating error term
       elsif ($_ > $ie)                                              { $ie }
-      else            { PDL::clump($ivs_ref->[$_] * $spdl->dummy(1), 1,2) }
+      else            { PDLA::clump($ivs_ref->[$_] * $spdl->dummy(1), 1,2) }
     } 0 .. $#$ivs_ref;
 
   @{$opt->{BTWN}}? push @errors, $ie_subj : push @errors, $spdl;
@@ -1593,8 +1593,8 @@ Supports BAD value (missing or 'BAD' values result in the corresponding pdl elem
 
 =cut
 
-*dummy_code = \&PDL::dummy_code;
-sub PDL::dummy_code {
+*dummy_code = \&PDLA::dummy_code;
+sub PDLA::dummy_code {
   my ($var_ref) = @_;
 
   my $var_e = effect_code( $var_ref );
@@ -1623,7 +1623,7 @@ Supports BAD value (missing or 'BAD' values result in the corresponding pdl elem
      [ 1  1  1  0  0  0 -1 -1 -1]
      [ 0  0  0  1  1  1 -1 -1 -1]
     ]    
-    PDL: Double D [9,2]
+    PDLA: Double D [9,2]
 
     print "$_\t$map->{$_}\n" for (sort keys %$map)
     a       0
@@ -1632,19 +1632,19 @@ Supports BAD value (missing or 'BAD' values result in the corresponding pdl elem
 
 =cut
 
-*effect_code = \&PDL::effect_code;
-sub PDL::effect_code {
+*effect_code = \&PDLA::effect_code;
+sub PDLA::effect_code {
   my ($var_ref) = @_;
 
     # pdl->uniq sorts elems. so instead list it to maintain old order
-  if (ref $var_ref eq 'PDL') {
+  if (ref $var_ref eq 'PDLA') {
     $var_ref = $var_ref->squeeze;
     $var_ref->getndims > 1 and
       croak "multidim pdl passed for single var!";
     $var_ref = [ list $var_ref ];
   }
 
-  my ($var, $map_ref) = PDL::Stats::Basic::_array_to_pdl( $var_ref );
+  my ($var, $map_ref) = PDLA::Stats::Basic::_array_to_pdl( $var_ref );
   my $var_e = zeroes float, $var->nelem, $var->max;
 
   for my $l (0 .. $var->max - 1) {
@@ -1681,8 +1681,8 @@ Supports BAD value (missing or 'BAD' values result in the corresponding pdl elem
 
 =cut
 
-*effect_code_w = \&PDL::effect_code_w;
-sub PDL::effect_code_w {
+*effect_code_w = \&PDLA::effect_code_w;
+sub PDLA::effect_code_w {
   my ($var_ref) = @_;
 
   my ($var_e, $map_ref) = effect_code( $var_ref );
@@ -1731,8 +1731,8 @@ Supports BAD value (missing or 'BAD' values result in the corresponding pdl elem
 
 =cut
 
-*interaction_code = \&PDL::interaction_code;
-sub PDL::interaction_code {
+*interaction_code = \&PDLA::interaction_code;
+sub PDLA::interaction_code {
   my @vars = @_;
 
   my $i = ones( $vars[0]->dim(0), 1 );
@@ -1799,8 +1799,8 @@ Usage:
  
 =cut
 
-*ols = \&PDL::ols;
-sub PDL::ols {
+*ols = \&PDLA::ols;
+sub PDLA::ols {
     # y [n], ivs [n x attr] pdl
   my ($y, $ivs, $opt) = @_;
   my %opt = (
@@ -1833,14 +1833,14 @@ sub PDL::ols {
 
   my $C;
   if ( $SLATEC ) {
-    $C = PDL::Slatec::matinv( $ivs x $ivs->xchg(0,1) );
+    $C = PDLA::Slatec::matinv( $ivs x $ivs->xchg(0,1) );
   }
   else {
     $C = inv( $ivs x $ivs->xchg(0,1) );
   }
 
     # Fitted coefficients vector
-  my $coeff = PDL::squeeze( $C x $Y );
+  my $coeff = PDLA::squeeze( $C x $Y );
      $coeff *= $ymean;        # Un-normalise
 
   my %ret;
@@ -1895,7 +1895,7 @@ sub PDL::ols {
   $ret{b_p} = 2 * ( 1 - $ret{b_t}->abs->gsl_cdf_tdist_P( $ret{F_df}->(1) ) )
     if $CDF;
 
-  for (keys %ret) { ref $ret{$_} eq 'PDL' and $ret{$_} = $ret{$_}->squeeze };
+  for (keys %ret) { ref $ret{$_} eq 'PDLA' and $ret{$_} = $ret{$_}->squeeze };
 
   return %ret;
 }
@@ -1958,16 +1958,16 @@ Usage:
 
 =cut
 
-*ols_rptd = \&PDL::ols_rptd;
-sub PDL::ols_rptd {
+*ols_rptd = \&PDLA::ols_rptd;
+sub PDLA::ols_rptd {
   my ($y, $subj, @ivs_raw) = @_;
 
   $y = $y->squeeze;
   $y->getndims > 1 and
     croak "ols_rptd does not support threading";
 
-  my @ivs = map {  (ref $_ eq 'PDL' and $_->ndims > 1)?  $_
-                  : ref $_ eq 'PDL' ?                    $_->dummy(1)
+  my @ivs = map {  (ref $_ eq 'PDLA' and $_->ndims > 1)?  $_
+                  : ref $_ eq 'PDLA' ?                    $_->dummy(1)
                   :                   scalar effect_code($_)
                   ;
                 } @ivs_raw;
@@ -2007,7 +2007,7 @@ sub PDL::ols_rptd {
 
   # STEP 3: get precitor x subj interaction as error term
 
-  my $iv_e = PDL::glue 1, map { interaction_code( $s, $_ ) } @ivs;
+  my $iv_e = PDLA::glue 1, map { interaction_code( $s, $_ ) } @ivs;
 
     # get total sse for this step. full model now.
   my $b_f = $y->ols_t( $iv_p->glue(1,$iv_e) );
@@ -2018,7 +2018,7 @@ sub PDL::ols_rptd {
   $r{ss_err} = zeroes scalar(@ivs);
   for my $i (0 .. $#ivs) {
     my @i_rest = grep { $_ != $i } 0 .. $#ivs;
-    my $e_rest = PDL::glue 1, map { interaction_code( $s, $_ ) } @ivs[@i_rest];
+    my $e_rest = PDLA::glue 1, map { interaction_code( $s, $_ ) } @ivs[@i_rest];
     my $iv = $iv_p->glue(1, $e_rest);
     my $b  = $y->ols_t($iv);
     my $pred = sumover($b(0:-2) * $iv->transpose) + $b(-1);
@@ -2046,7 +2046,7 @@ sub PDL::ols_rptd {
 
 =for ref
 
-Logistic regression with maximum likelihood estimation using PDL::Fit::LM (requires PDL::Slatec. Hence loaded with "require" in the sub instead of "use" at the beginning).
+Logistic regression with maximum likelihood estimation using PDLA::Fit::LM (requires PDLA::Slatec. Hence loaded with "require" in the sub instead of "use" at the beginning).
 
 IVs ($x) should be pdl dims $y->nelem or $y->nelem x n_iv. Do not supply the constant vector in $x. It is included in the model and returned as LAST of coeff. Returns full model in list context and coeff in scalar context.
 
@@ -2108,9 +2108,9 @@ Usage:
 
 =cut
 
-*logistic = \&PDL::logistic;
-sub PDL::logistic {
-  require PDL::Fit::LM;              # uses PDL::Slatec
+*logistic = \&PDLA::logistic;
+sub PDLA::logistic {
+  require PDLA::Fit::LM;              # uses PDLA::Slatec
 
   my ( $self, $ivs, $opt ) = @_;
   
@@ -2132,7 +2132,7 @@ sub PDL::logistic {
     # Use lmfit. Fourth input argument is reference to user-defined
     # copy INITP so we have the original value when needed 
   my ($yfit,$coeff,$cov,$iter)
-    = PDL::Fit::LM::lmfit($ivs, $self, $opt{WT}, \&_logistic, $opt{INITP}->copy,
+    = PDLA::Fit::LM::lmfit($ivs, $self, $opt{WT}, \&_logistic, $opt{INITP}->copy,
       { Maxiter=>$opt{MAXIT}, Eps=>$opt{EPS} } );
     # apparently at least coeff is child of some pdl
     # which is changed in later lmfit calls
@@ -2151,7 +2151,7 @@ sub PDL::logistic {
   $ret{Dm_chisq} = $ret{D0} - $ret{Dm};
   $ret{Dm_df} = $ivs->dim(1);
   $ret{Dm_p}
-    = 1 - PDL::GSL::CDF::gsl_cdf_chisq_P( $ret{Dm_chisq}, $ret{Dm_df} )
+    = 1 - PDLA::GSL::CDF::gsl_cdf_chisq_P( $ret{Dm_chisq}, $ret{Dm_df} )
     if $CDF;
 
   my $coeff_chisq = zeroes $opt{INITP}->nelem;
@@ -2163,7 +2163,7 @@ sub PDL::logistic {
   
       my $init = $opt{INITP}->dice([ @G, $opt{INITP}->dim(0)-1 ])->copy;
       my $y_G
-        = PDL::Fit::LM::lmfit( $G, $self, $opt{WT}, \&_logistic, $init,
+        = PDLA::Fit::LM::lmfit( $G, $self, $opt{WT}, \&_logistic, $init,
         { Maxiter=>$opt{MAXIT}, Eps=>$opt{EPS} } );
   
       ($_tmp = $coeff_chisq($k)) .= $self->dm( $y_G ) - $ret{Dm};
@@ -2175,7 +2175,7 @@ sub PDL::logistic {
   }
 
   my $y_c
-      = PDL::Fit::LM::lmfit( $ivs, $self, $opt{WT}, \&_logistic_no_intercept, $opt{INITP}->(0:-2)->copy,
+      = PDLA::Fit::LM::lmfit( $ivs, $self, $opt{WT}, \&_logistic_no_intercept, $opt{INITP}->(0:-2)->copy,
       { Maxiter=>$opt{MAXIT}, Eps=>$opt{EPS} } );
 
   ($_tmp = $coeff_chisq(-1)) .= $self->dm( $y_c ) - $ret{Dm};
@@ -2187,7 +2187,7 @@ sub PDL::logistic {
   $ret{y_pred} = $yfit;
   $ret{iter} = $iter;
 
-  for (keys %ret) { ref $ret{$_} eq 'PDL' and $ret{$_} = $ret{$_}->squeeze };
+  for (keys %ret) { ref $ret{$_} eq 'PDLA' and $ret{$_} = $ret{$_}->squeeze };
 
   return %ret;
 }
@@ -2241,7 +2241,7 @@ sub _logistic_no_intercept {
 
 =for ref
 
-Principal component analysis. Based on corr instead of cov (bad values are ignored pair-wise. OK when bad values are few but otherwise probably should fill_m etc before pca). Use PDL::Slatec::eigsys() if installed, otherwise use PDL::MatrixOps::eigens_sym().
+Principal component analysis. Based on corr instead of cov (bad values are ignored pair-wise. OK when bad values are few but otherwise probably should fill_m etc before pca). Use PDLA::Slatec::eigsys() if installed, otherwise use PDLA::MatrixOps::eigens_sym().
 
 =for options
 
@@ -2289,8 +2289,8 @@ Plot scores along the first two components,
 
 =cut
 
-*pca = \&PDL::pca;
-sub PDL::pca { 
+*pca = \&PDLA::pca;
+sub PDLA::pca { 
   my ($self, $opt) = @_;
 
   my %opt = (
@@ -2304,11 +2304,11 @@ sub PDL::pca {
     # value is axis pdl and score is var x axis
   my ($eigval, $eigvec);
   if ( $SLATEC ) {
-    ($eigval, $eigvec) = $var_var->PDL::Slatec::eigsys;
+    ($eigval, $eigvec) = $var_var->PDLA::Slatec::eigsys;
   }
   else {
     ($eigvec, $eigval) = $var_var->eigens_sym;
-      # compatibility with PDL::Slatec::eigsys
+      # compatibility with PDLA::Slatec::eigsys
     $eigvec = $eigvec->inplace->transpose->sever;
   }
 
@@ -2377,8 +2377,8 @@ Usage:
     
 =cut
 
-*pca_sorti = \&PDL::pca_sorti;
-sub PDL::pca_sorti {
+*pca_sorti = \&PDLA::pca_sorti;
+sub PDLA::pca_sorti {
     # $self is pdl (var x component)
   my ($self, $opt) = @_;
 
@@ -2419,7 +2419,7 @@ Default options (case insensitive):
     AUTO  => 1,       # auto set dims to be on x-axis, line, panel
                       # if set 0, dim 0 goes on x-axis, dim 1 as lines
                       # dim 2+ as panels
-      # see PDL::Graphics::PGPLOT::Window for next options
+      # see PDLA::Graphics::PGPLOT::Window for next options
     WIN   => undef,   # pgwin object. not closed here if passed
                       # allows comparing multiple lines in same plot
                       # set env before passing WIN
@@ -2441,13 +2441,13 @@ Or like this:
 
 =cut
 
-*plot_means = \&PDL::plot_means;
-sub PDL::plot_means {
+*plot_means = \&PDLA::plot_means;
+sub PDLA::plot_means {
   my $opt = pop @_
     if ref $_[-1] eq 'HASH';
   my ($self, $se) = @_;
   if (!$PGPLOT) {
-    carp "No PDL::Graphics::PGPLOT, no plot :(";
+    carp "No PDLA::Graphics::PGPLOT, no plot :(";
     return;
   }
   $self = $self->squeeze;
@@ -2460,10 +2460,10 @@ sub PDL::plot_means {
     IVNM => ['IV_0', 'IV_1', 'IV_2', 'IV_3'],
     DVNM => 'DV',
     AUTO  => 1,             # auto set vars to be on X axis, line, panel
-    WIN   => undef,         # PDL::Graphics::PGPLOT::Window object
+    WIN   => undef,         # PDLA::Graphics::PGPLOT::Window object
     DEV   => $DEV,
     SIZE  => 640,           # individual square panel size in pixels
-    SYMBL => [0, 4, 7, 11], # ref PDL::Graphics::PGPLOT::Window 
+    SYMBL => [0, 4, 7, 11], # ref PDLA::Graphics::PGPLOT::Window 
   );
   $opt and $opt{uc $_} = $opt->{$_} for (keys %$opt);
 
@@ -2551,7 +2551,7 @@ Usage:
 
 Default options (case insensitive):
 
-     # see PDL::Graphics::PGPLOT::Window for more info
+     # see PDLA::Graphics::PGPLOT::Window for more info
     WIN   => undef,  # pgwin object. not closed here if passed
                      # allows comparing multiple lines in same plot
                      # set env before passing WIN
@@ -2562,17 +2562,17 @@ Default options (case insensitive):
 
 =cut
 
-*plot_residuals = \&PDL::plot_residuals;
-sub PDL::plot_residuals {
+*plot_residuals = \&PDLA::plot_residuals;
+sub PDLA::plot_residuals {
   if (!$PGPLOT) {
-    carp "No PDL::Graphics::PGPLOT, no plot :(";
+    carp "No PDLA::Graphics::PGPLOT, no plot :(";
     return;
   }
   my $opt = pop @_
     if ref $_[-1] eq 'HASH';
   my ($y, $y_pred) = @_;
   my %opt = (
-     # see PDL::Graphics::PGPLOT::Window for next options
+     # see PDLA::Graphics::PGPLOT::Window for next options
     WIN   => undef,  # pgwin object. not closed here if passed
                      # allows comparing multiple lines in same plot
                      # set env before passing WIN
@@ -2614,7 +2614,7 @@ Default options (case insensitive):
 
   CORR  => 1,      # boolean. PCA was based on correlation or covariance
   COMP  => [0,1],  # indices to components to plot
-    # see PDL::Graphics::PGPLOT::Window for next options
+    # see PDLA::Graphics::PGPLOT::Window for next options
   WIN   => undef,  # pgwin object. not closed here if passed
                    # allows comparing multiple lines in same plot
                    # set env before passing WIN
@@ -2632,10 +2632,10 @@ Usage:
 
 =cut
 
-*plot_scores = \&PDL::plot_scores;
-sub PDL::plot_scores {
+*plot_scores = \&PDLA::plot_scores;
+sub PDLA::plot_scores {
   if (!$PGPLOT) {
-    carp "No PDL::Graphics::PGPLOT, no plot :(";
+    carp "No PDLA::Graphics::PGPLOT, no plot :(";
     return;
   }
   my $opt = pop @_
@@ -2644,7 +2644,7 @@ sub PDL::plot_scores {
   my %opt = (
     CORR  => 1,      # boolean. PCA was based on correlation or covariance
     COMP  => [0,1],  # indices to components to plot
-     # see PDL::Graphics::PGPLOT::Window for next options
+     # see PDLA::Graphics::PGPLOT::Window for next options
     WIN   => undef,  # pgwin object. not closed here if passed
                      # allows comparing multiple lines in same plot
                      # set env before passing WIN
@@ -2690,7 +2690,7 @@ Default options (case insensitive):
   NCOMP => 20,     # max number of components to plot
   CUT   => 0,      # set to plot cutoff line after this many components
                    # undef to plot suggested cutoff line for NCOMP comps
-   # see PDL::Graphics::PGPLOT::Window for next options
+   # see PDLA::Graphics::PGPLOT::Window for next options
   WIN   => undef,  # pgwin object. not closed here if passed
                    # allows comparing multiple lines in same plot
                    # set env before passing WIN
@@ -2713,11 +2713,11 @@ Or, because NCOMP is used so often, it is allowed a shortcut,
 
 =cut
 
-*plot_scree = \&PDL::plot_screes;      # here for now for compatibility
-*plot_screes = \&PDL::plot_screes;
-sub PDL::plot_screes {
+*plot_scree = \&PDLA::plot_screes;      # here for now for compatibility
+*plot_screes = \&PDLA::plot_screes;
+sub PDLA::plot_screes {
   if (!$PGPLOT) {
-    carp "No PDL::Graphics::PGPLOT, no plot :(";
+    carp "No PDLA::Graphics::PGPLOT, no plot :(";
     return;
   }
   my $opt = pop @_
@@ -2727,7 +2727,7 @@ sub PDL::plot_screes {
     NCOMP => 20,     # max number of components to plot
     CUT   => 0,      # set to plot cutoff line after this many components
                      # undef to plot suggested cutoff line for NCOMP comps
-     # see PDL::Graphics::PGPLOT::Window for next options
+     # see PDLA::Graphics::PGPLOT::Window for next options
     WIN   => undef,  # pgwin object. not closed here if passed
                      # allows comparing multiple lines in same plot
                      # set env before passing WIN
@@ -2740,7 +2740,7 @@ sub PDL::plot_screes {
     if $ncomp;
     # re-use $ncomp below
   $ncomp = ($self->dim(0) < $opt{NCOMP})? $self->dim(0) : $opt{NCOMP};
-  $opt{CUT}   = PDL::Stats::Kmeans::_scree_ind $self(0:$ncomp-1)
+  $opt{CUT}   = PDLA::Stats::Kmeans::_scree_ind $self(0:$ncomp-1)
     if !defined $opt{CUT};
 
   my $win = $opt{WIN};
@@ -2764,9 +2764,9 @@ sub PDL::plot_screes {
 
 =head1 SEE ALSO
 
-PDL::Fit::Linfit
+PDLA::Fit::Linfit
 
-PDL::Fit::LM
+PDLA::Fit::LM
 
 =head1 REFERENCES
 
@@ -2790,7 +2790,7 @@ Van den Noortgatea, W., & Onghenaa, P. (2006). Analysing repeated measures data 
 
 Copyright (C) 2009 Maggie J. Xiong <maggiexyz users.sourceforge.net>
 
-All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDL distribution.
+All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDLA distribution.
 
 =cut
 

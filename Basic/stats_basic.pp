@@ -5,18 +5,18 @@ pp_add_exported('', 'binomial_test', 'rtable', 'which_id',
 
 pp_addpm({At=>'Top'}, <<'EOD');
 
-use PDL::LiteF;
-use PDL::NiceSlice;
+use PDLA::LiteF;
+use PDLA::NiceSlice;
 use Carp;
 
-$PDL::onlinedoc->scan(__FILE__) if $PDL::onlinedoc;
+$PDLA::onlinedoc->scan(__FILE__) if $PDLA::onlinedoc;
 
-eval { require PDL::GSL::CDF; };
+eval { require PDLA::GSL::CDF; };
 my $CDF = 1 if !$@;
 
 =head1 NAME
 
-PDL::Stats::Basic -- basic statistics and related utilities such as standard deviation, Pearson correlation, and t-tests.
+PDLA::Stats::Basic -- basic statistics and related utilities such as standard deviation, Pearson correlation, and t-tests.
 
 =head1 DESCRIPTION
 
@@ -26,9 +26,9 @@ Does not have mean or median function here. see SEE ALSO.
 
 =head1 SYNOPSIS
 
-    use PDL::LiteF;
-    use PDL::NiceSlice;
-    use PDL::Stats::Basic;
+    use PDLA::LiteF;
+    use PDLA::NiceSlice;
+    use PDLA::Stats::Basic;
 
     my $stdv = $data->stdv;
 
@@ -937,7 +937,7 @@ pp_def('t_corr',
     $n      = $data->n_pair( $data->dummy(1) );
     $t_corr = $corr->t_corr( $n );
 
-    use PDL::GSL::CDF;
+    use PDLA::GSL::CDF;
 
     $p_2tail = 2 * (1 - gsl_cdf_tdist_P( $t_corr->abs, $n-2 ));
 
@@ -1106,7 +1106,7 @@ pp_def('t_test',
 
     my ($t, $df) = t_test( $pdl1, $pdl2 );
 
-    use PDL::GSL::CDF;
+    use PDLA::GSL::CDF;
 
     my $p_2tail = 2 * (1 - gsl_cdf_tdist_P( $t->abs, $df ));
 
@@ -1277,18 +1277,18 @@ Usage:
 
 =cut
 
-*binomial_test = \&PDL::binomial_test;
-sub PDL::binomial_test {
+*binomial_test = \&PDLA::binomial_test;
+sub PDLA::binomial_test {
   my ($x, $n, $P) = @_;
 
-  carp 'Please install PDL::GSL::CDF.' unless $CDF;
+  carp 'Please install PDLA::GSL::CDF.' unless $CDF;
   carp 'This function does NOT currently support bad value in the number of successes.' if $x->badflag();
 
   my $pdlx = pdl($x);
   $pdlx->badflag(1);
   $pdlx = $pdlx->setvaltobad(0);
 
-  my $p = 1 - PDL::GSL::CDF::gsl_cdf_binomial_P( $pdlx - 1, $P, $n );
+  my $p = 1 - PDLA::GSL::CDF::gsl_cdf_binomial_P( $pdlx - 1, $P, $n );
   $p = $p->setbadtoval(1);
   $p->badflag(0);
 
@@ -1306,7 +1306,7 @@ Reads either file or file handle*. Returns observation x variable pdl and var an
 
 *If passed handle, it will not be closed here.
 
-*PDL::Bad::setvaltobad only works consistently with the default TYPE double before PDL-2.4.4_04.
+*PDLA::Bad::setvaltobad only works consistently with the default TYPE double before PDLA-2.4.4_04.
 
 =for options
 
@@ -1338,7 +1338,7 @@ Sample file diet.txt:
     # By default prints out data info and @$idv index and element
 
     reading diet.txt for data and id... OK.
-    data table as PDL dim o x v: PDL: Double D [4,3]
+    data table as PDLA dim o x v: PDLA: Double D [4,3]
     0	height
     1	weight
     2	diet
@@ -1369,7 +1369,7 @@ sub rtable {
   $opt and $opt{uc $_} = $opt->{$_} for (keys %$opt);
   $opt{V} and print STDERR "reading $src for data and id... ";
   
-  local $PDL::undefval = $opt{MISSN};
+  local $PDLA::undefval = $opt{MISSN};
 
   my $id_c = [];     # match declaration of $id_r for return purpose
   if ($opt{C_ID}) {
@@ -1379,7 +1379,7 @@ sub rtable {
     $id_c = \@entries;
   }
 
-  my ($c_row, $id_r, $data, @data) = (0, [], PDL->null, );
+  my ($c_row, $id_r, $data, @data) = (0, [], PDLA->null, );
   while (<$fh_in>) {
     chomp;
     my @entries = split /$opt{SEP}/, $_, -1;
@@ -1409,7 +1409,7 @@ sub rtable {
     and ($data, $idv, $ido) = ($data->inplace->transpose, $id_c, $id_r);
 
   if ($opt{V}) {
-    print STDERR "OK.\ndata table as PDL dim o x v: " . $data->info . "\n";
+    print STDERR "OK.\ndata table as PDLA dim o x v: " . $data->info . "\n";
     $idv and print STDERR "$_\t$$idv[$_]\n" for (0..$#$idv);
   }
  
@@ -1504,8 +1504,8 @@ Usage:
 
 =cut
 
-*group_by = \&PDL::group_by;
-sub PDL::group_by {
+*group_by = \&PDLA::group_by;
+sub PDLA::group_by {
     my $p = shift;
     my @factors = @_;
 
@@ -1526,7 +1526,7 @@ sub PDL::group_by {
     }
 
     # make sure all are arrays instead of pdls
-    @factors = map { ref($_) eq 'PDL'? [$_->list] : $_ } @factors;
+    @factors = map { ref($_) eq 'PDLA'? [$_->list] : $_ } @factors;
 
     my (@cells);
     for my $ele (0 .. $#{$factors[0]}) {
@@ -1670,11 +1670,11 @@ sub _array_to_pdl {
 
 =head1 SEE ALSO
 
-PDL::Basic (hist for frequency counts)
+PDLA::Basic (hist for frequency counts)
 
-PDL::Ufunc (sum, avg, median, min, max, etc.)
+PDLA::Ufunc (sum, avg, median, min, max, etc.)
 
-PDL::GSL::CDF (various cumulative distribution functions)
+PDLA::GSL::CDF (various cumulative distribution functions)
 
 =head1 	REFERENCES
 
@@ -1684,7 +1684,7 @@ Hays, W.L. (1994). Statistics (5th ed.). Fort Worth, TX: Harcourt Brace College 
 
 Copyright (C) 2009 Maggie J. Xiong <maggiexyz users.sourceforge.net>
 
-All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDL distribution.
+All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDLA distribution.
 
 =cut
 

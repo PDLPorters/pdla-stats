@@ -4,16 +4,16 @@ use strict;
 use warnings;
 use Test::More;
 
-use PDL::LiteF;
-use PDL::NiceSlice;
-use PDL::Stats::Basic;
+use PDLA::LiteF;
+use PDLA::NiceSlice;
+use PDLA::Stats::Basic;
 
 sub tapprox {
   my($a,$b, $eps) = @_;
   $eps ||= 1e-6;
   my $diff = abs($a-$b);
     # use max to make it perl scalar
-  ref $diff eq 'PDL' and $diff = $diff->max;
+  ref $diff eq 'PDLA' and $diff = $diff->max;
   return $diff < $eps;
 }
 
@@ -125,8 +125,8 @@ is( tapprox( $df, 3 ), 1 );
 
   # 50
 SKIP: {
-  eval { require PDL::GSL::CDF; };
-  skip 'no PDL::GSL::CDF', 1 if $@;
+  eval { require PDLA::GSL::CDF; };
+  skip 'no PDLA::GSL::CDF', 1 if $@;
   my $x = pdl(1, 2);
   my $n = pdl(2, 10);
   my $p = .5;
@@ -175,12 +175,12 @@ SKIP: {
 
 {
     my @a = qw(a a b b c c);
-    my $a = PDL::Stats::Basic::_array_to_pdl( \@a );
+    my $a = PDLA::Stats::Basic::_array_to_pdl( \@a );
     my $ans = pdl( 0,0,1,1,2,2 );
     is( tapprox( sum(abs($a - $ans)), 0 ), 1, '_array_to_pdl' );
 
     $a[-1] = undef;
-    my $a_bad = PDL::Stats::Basic::_array_to_pdl( \@a );
+    my $a_bad = PDLA::Stats::Basic::_array_to_pdl( \@a );
     my $ans_bad = pdl( 0,0,1,1,2,2 );
     $ans_bad = $ans_bad->setbadat(-1);
 
@@ -188,7 +188,7 @@ SKIP: {
     is( tapprox( sum(abs($a_bad - $ans_bad)), 0 ), 1, '_array_to_pdl with missing value undef correctly coded' );
 
     $a[-1] = 'BAD';
-    $a_bad = PDL::Stats::Basic::_array_to_pdl( \@a );
+    $a_bad = PDLA::Stats::Basic::_array_to_pdl( \@a );
 
     is( $a_bad(-1)->isbad(), 1, '_array_to_pdl with missing value BAD' );
     is( tapprox( sum(abs($a_bad - $ans_bad)), 0 ), 1, '_array_to_pdl with missing value BAD correctly coded' );

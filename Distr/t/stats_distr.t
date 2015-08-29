@@ -7,16 +7,16 @@ use Test::More;
 BEGIN {
     plan tests => 46;
       # 1
-    use_ok( 'PDL::Stats::Distr' );
+    use_ok( 'PDLA::Stats::Distr' );
 }
 
-use PDL::LiteF;
+use PDLA::LiteF;
 
 sub tapprox {
   my($a,$b) = @_;
   my $diff = abs($a-$b);
     # use max to make it perl scalar
-  ref $diff eq 'PDL' and $diff = $diff->max;
+  ref $diff eq 'PDLA' and $diff = $diff->max;
   return $diff < 1.0e-6;
 }
   # 2-11

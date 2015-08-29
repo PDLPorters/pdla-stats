@@ -1,8 +1,8 @@
-   use PDL::Core::Dev;
+   use PDLA::Core::Dev;
    use ExtUtils::MakeMaker;
-   PDL::Core::Dev->import();
+   PDLA::Core::Dev->import();
    
-   $package = ["kmeans.pp",Kmeans,PDL::Stats::Kmeans];
+   $package = ["kmeans.pp",Kmeans,PDLA::Stats::Kmeans];
    %hash = pdlpp_stdargs($package);
    
    WriteMakefile( %hash );

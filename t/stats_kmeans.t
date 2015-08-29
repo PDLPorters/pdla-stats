@@ -6,19 +6,19 @@ use Test::More;
 
 BEGIN {
       # 1-2
-    use_ok( 'PDL::Stats::Basic' );
-    use_ok( 'PDL::Stats::Kmeans' );
+    use_ok( 'PDLA::Stats::Basic' );
+    use_ok( 'PDLA::Stats::Kmeans' );
 }
 
-use PDL::LiteF;
-use PDL::NiceSlice;
+use PDLA::LiteF;
+use PDLA::NiceSlice;
 
 sub tapprox {
   my($a,$b, $eps) = @_;
   $eps ||= 1e-6;
   my $diff = abs($a-$b);
     # use max to make it perl scalar
-  ref $diff eq 'PDL' and $diff = $diff->max;
+  ref $diff eq 'PDLA' and $diff = $diff->max;
   return $diff < $eps;
 }
 
@@ -249,7 +249,7 @@ sub t_pca_cluster {
   my $a = pdl( [[3,1], [2,4]] );
   my $b = pdl( [2,4], [3,1] );
   my $c = pdl( 5,15 );
-  my $d = PDL::Stats::Kmeans::_d_point2line( $a, $b, $c );
+  my $d = PDLA::Stats::Kmeans::_d_point2line( $a, $b, $c );
 
   is( tapprox(sum($d - pdl(1.754116, 1.4142136)), 0), 1, '_d_point2line');
 }

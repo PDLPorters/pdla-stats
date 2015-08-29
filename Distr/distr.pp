@@ -8,13 +8,13 @@ use strict;
 use warnings;
 
 use Carp;
-use PDL::LiteF;
+use PDLA::LiteF;
 
-$PDL::onlinedoc->scan(__FILE__) if $PDL::onlinedoc;
+$PDLA::onlinedoc->scan(__FILE__) if $PDLA::onlinedoc;
 
 eval {
-  require PDL::Graphics::PGPLOT::Window;
-  PDL::Graphics::PGPLOT::Window->import( 'pgwin' );
+  require PDLA::Graphics::PGPLOT::Window;
+  PDLA::Graphics::PGPLOT::Window->import( 'pgwin' );
 };
 my $PGPLOT = 1 if !$@;
 
@@ -22,7 +22,7 @@ my $DEV = ($^O =~ /win/i)? '/png' : '/xs';
 
 =head1 NAME
 
-PDL::Stats::Distr -- parameter estimations and probability density functions for distributions.
+PDLA::Stats::Distr -- parameter estimations and probability density functions for distributions.
 
 =head1 DESCRIPTION
 
@@ -30,8 +30,8 @@ Parameter estimate is maximum likelihood estimate when there is closed form esti
 
 =head1 SYNOPSIS
 
-    use PDL::LiteF;
-    use PDL::Stats::Distr;
+    use PDLA::LiteF;
+    use PDLA::Stats::Distr;
 
       # do a frequency (probability) plot with fitted normal curve
 
@@ -46,7 +46,7 @@ Parameter estimate is maximum likelihood estimate when there is closed form esti
       # fitted normal curve probabilities
     my $p = $xvals->pdf_gaussian($m, $v);
 
-    use PDL::Graphics::PGPLOT::Window;
+    use PDLA::Graphics::PGPLOT::Window;
     my $win = pgwin( Dev=>"/xs" );
 
     $win->bin( $hist );
@@ -1158,8 +1158,8 @@ Probability mass function for poisson distribution. Input is limited to x < 170 
 
 =cut
 
-*pmf_poisson_factorial = \&PDL::pmf_poisson_factorial;
-sub PDL::pmf_poisson_factorial {
+*pmf_poisson_factorial = \&PDLA::pmf_poisson_factorial;
+sub PDLA::pmf_poisson_factorial {
 	my ($x, $l) = @_;
 
 	my $pdlx = pdl($x);
@@ -1219,7 +1219,7 @@ Plots data distribution. When given specific distribution(s) to fit, returns % r
 Default options (case insensitive):
 
     MAXBN => 20, 
-      # see PDL::Graphics::PGPLOT::Window for next options
+      # see PDLA::Graphics::PGPLOT::Window for next options
     WIN   => undef,   # pgwin object. not closed here if passed
                       # allows comparing multiple distr in same plot
                       # set env before passing WIN
@@ -1243,10 +1243,10 @@ Usage:
 
 =cut
 
-*plot_distr = \&PDL::plot_distr;
-sub PDL::plot_distr {
+*plot_distr = \&PDLA::plot_distr;
+sub PDLA::plot_distr {
   if (!$PGPLOT) {
-    carp "No PDL::Graphics::PGPLOT, no plot :(";
+    carp "No PDLA::Graphics::PGPLOT, no plot :(";
     return;
   }
   my ($self, @distr) = @_;
@@ -1271,10 +1271,10 @@ sub PDL::plot_distr {
   $range = $self->max - $self->min;
   $step  = $range / $opt{MAXBN};
   $step_int = ($range <= $opt{MAXBN})? 1 
-            :                          PDL::ceil( $range / $opt{MAXBN} )
+            :                          PDLA::ceil( $range / $opt{MAXBN} )
             ;
     # use min to make it pure scalar for sequence()
-  $opt{MAXBN} = PDL::ceil( $range / $step )->min;
+  $opt{MAXBN} = PDLA::ceil( $range / $step )->min;
 
   my $hist = $self->double->histogram($step, $self->min, $opt{MAXBN});
     # turn fre into prob
@@ -1282,7 +1282,7 @@ sub PDL::plot_distr {
 
   my $xvals = $self->min + sequence( $opt{MAXBN} ) * $step;
   my $xvals_int
-    = PDL::ceil($self->min) + sequence( $opt{MAXBN} ) * $step_int;
+    = PDLA::ceil($self->min) + sequence( $opt{MAXBN} ) * $step_int;
   $xvals_int = $xvals_int->where( $xvals_int <= $xvals->max )->sever;
 
   my $win = $opt{WIN};
@@ -1303,7 +1303,7 @@ sub PDL::plot_distr {
   $c = $opt{COLOR};        # fitted lines start from ++$c
   for my $distr ( @distr ) {
       # find mle_ or mme_$distr;
-    my @funcs = grep { /_$distr$/ } (keys %PDL::Stats::Distr::);
+    my @funcs = grep { /_$distr$/ } (keys %PDLA::Stats::Distr::);
     if (!@funcs) {
       carp "Do not recognize $distr distribution!";
       next;
@@ -1343,15 +1343,15 @@ GSL - GNU Scientific Library
 
 =head1 SEE ALSO
 
-PDL::Graphics::PGPLOT
+PDLA::Graphics::PGPLOT
 
-PDL::GSL::CDF
+PDLA::GSL::CDF
 
 =head1 AUTHOR
 
 Copyright (C) 2009 Maggie J. Xiong <maggiexyz users.sourceforge.net>, David Mertens
 
-All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDL distribution.
+All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDLA distribution.
 
 =cut
 

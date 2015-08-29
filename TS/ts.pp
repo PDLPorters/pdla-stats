@@ -6,35 +6,35 @@ pp_addpm({At=>'Top'}, <<'EOD');
 
 =head1 NAME
 
-PDL::Stats::TS -- basic time series functions
+PDLA::Stats::TS -- basic time series functions
 
 =head1 DESCRIPTION
 
-The terms FUNCTIONS and METHODS are arbitrarily used to refer to methods that are threadable and methods that are NOT threadable, respectively. Plots require PDL::Graphics::PGPLOT.
+The terms FUNCTIONS and METHODS are arbitrarily used to refer to methods that are threadable and methods that are NOT threadable, respectively. Plots require PDLA::Graphics::PGPLOT.
 
 ***EXPERIMENTAL!*** In particular, bad value support is spotty and may be shaky. USE WITH DISCRETION! 
 
 =head1 SYNOPSIS
 
-    use PDL::LiteF;
-    use PDL::NiceSlice;
-    use PDL::Stats::TS;
+    use PDLA::LiteF;
+    use PDLA::NiceSlice;
+    use PDLA::Stats::TS;
 
     my $r = $data->acf(5);
 
 =cut
 
 use Carp;
-use PDL::LiteF;
-use PDL::NiceSlice;
-use PDL::Stats::Basic;
-use PDL::Stats::Kmeans;
+use PDLA::LiteF;
+use PDLA::NiceSlice;
+use PDLA::Stats::Basic;
+use PDLA::Stats::Kmeans;
 
-$PDL::onlinedoc->scan(__FILE__) if $PDL::onlinedoc;
+$PDLA::onlinedoc->scan(__FILE__) if $PDLA::onlinedoc;
 
 eval {
-  require PDL::Graphics::PGPLOT::Window;
-  PDL::Graphics::PGPLOT::Window->import( 'pgwin' );
+  require PDLA::Graphics::PGPLOT::Window;
+  PDLA::Graphics::PGPLOT::Window->import( 'pgwin' );
 };
 my $PGPLOT = 1 if !$@;
 
@@ -146,8 +146,8 @@ usage:
 
 =cut
 
-*acf = \&PDL::acf;
-sub PDL::acf {
+*acf = \&PDLA::acf;
+sub PDLA::acf {
   my ($self, $h) = @_;
   $h ||= $self->dim(0) - 1;
   return $self->_acf($h+1);
@@ -183,8 +183,8 @@ usage:
 
 =cut
 
-*acvf = \&PDL::acvf;
-sub PDL::acvf {
+*acvf = \&PDLA::acvf;
+sub PDLA::acvf {
   my ($self, $h) = @_;
   $h ||= $self->dim(0) - 1;
   return $self->_acvf($h+1);
@@ -389,8 +389,8 @@ fill_ma does handle bad values. Output pdl bad flag is cleared unless the specif
 
 =cut
 
-*fill_ma = \&PDL::fill_ma;
-sub PDL::fill_ma {
+*fill_ma = \&PDLA::fill_ma;
+sub PDLA::fill_ma {
   my ($x, $q) = @_;
 
   my $x_filled = $x->_fill_ma($q);
@@ -698,7 +698,7 @@ Usage:
    
     # get p-value from chisq distr
 
-    perldl> use PDL::GSL::CDF
+    perldl> use PDLA::GSL::CDF
     perldl> p 1 - gsl_cdf_chisq_P( $chisq, 5 )
     0.0480112934306748
 
@@ -743,13 +743,13 @@ Usage:
 
 =cut
 
-sub PDL::pred_ar {
+sub PDLA::pred_ar {
   my ($x, $b, $t, $opt) = @_;
   my %opt = ( CONST => 1 );
   $opt and $opt{uc $_} = $opt->{$_} for (keys %$opt);
 
   $b = pdl $b
-    unless ref $b eq 'PDL';        # allows passing simple number
+    unless ref $b eq 'PDLA';        # allows passing simple number
 
   my $ext;
   if ($opt{CONST}) {
@@ -810,13 +810,13 @@ Default options (case insensitive):
     START_POSITION => 0,     # series starts at this position in season
     MISSING        => -999,  # internal mark for missing points in season
     PLOT  => 1,              # boolean
-      # see PDL::Graphics::PGPLOT::Window for next options
+      # see PDLA::Graphics::PGPLOT::Window for next options
     WIN   => undef,          # pass pgwin object for more plotting control
     DEV   => '/xs',          # open and close dev for plotting if no WIN
                              # defaults to '/png' in Windows
     COLOR => 1,
 
-See PDL::Graphics::PGPLOT for detailed graphing options.
+See PDLA::Graphics::PGPLOT for detailed graphing options.
 
 =for usage
 
@@ -824,20 +824,20 @@ See PDL::Graphics::PGPLOT for detailed graphing options.
 
 =cut
 
-*season_m = \&PDL::season_m;
-sub PDL::season_m {
+*season_m = \&PDLA::season_m;
+sub PDLA::season_m {
   my ($self, $d, $opt) = @_;
   my %opt = (
     START_POSITION => 0,     # series starts at this position in season
     MISSING        => -999,  # internal mark for missing points in season
     PLOT  => 1,
     WIN   => undef,          # pass pgwin object for more plotting control
-    DEV   => $DEV,           # see PDL::Graphics::PGPLOT for more info
+    DEV   => $DEV,           # see PDLA::Graphics::PGPLOT for more info
     COLOR => 1,
   );
   $opt and $opt{uc $_} = $opt->{$_} for (keys %$opt);
   if ($opt{PLOT} and !$PGPLOT) {
-    carp "No PDL::Graphics::PGPLOT, no plot :(";
+    carp "No PDLA::Graphics::PGPLOT, no plot :(";
     $opt{PLOT} = 0;
   }
 
@@ -896,12 +896,12 @@ Default options (case insensitive):
                        # defaults to '/png' in Windows
     COLOR => 1,        # data point color
 
-See PDL::Graphics::PGPLOT for detailed graphing options.
+See PDLA::Graphics::PGPLOT for detailed graphing options.
 
 =cut
 
-*plot_dseason = \&PDL::plot_dseason;
-sub PDL::plot_dseason {
+*plot_dseason = \&PDLA::plot_dseason;
+sub PDLA::plot_dseason {
   my ($self, $d, $opt) = @_;
   !defined($d) and croak "please set season period length";
   $self = $self->squeeze;
@@ -932,32 +932,32 @@ sub PDL::plot_dseason {
       unless $opt{WIN};
   }
   else {
-    carp "Please install PDL::Graphics::PGPLOT for plotting";
+    carp "Please install PDLA::Graphics::PGPLOT for plotting";
   }
 
   return $dsea; 
 }
 
-*filt_exp = \&PDL::filt_exp;
-sub PDL::filt_exp {
+*filt_exp = \&PDLA::filt_exp;
+sub PDLA::filt_exp {
   print STDERR "filt_exp() deprecated since version 0.5.0. Please use filter_exp() instead\n";
   return filter_exp( @_ );
 }
 
-*filt_ma = \&PDL::filt_ma;
-sub PDL::filt_ma {
+*filt_ma = \&PDLA::filt_ma;
+sub PDLA::filt_ma {
   print STDERR "filt_ma() deprecated since version 0.5.0. Please use filter_ma() instead\n";
   return filter_ma( @_ );
 }
 
-*dsea = \&PDL::dsea;
-sub PDL::dsea {
+*dsea = \&PDLA::dsea;
+sub PDLA::dsea {
   print STDERR "dsea() deprecated since version 0.5.0. Please use dseason() instead\n";
   return dseason( @_ );
 }
 
-*plot_season = \&PDL::plot_season;
-sub PDL::plot_season {
+*plot_season = \&PDLA::plot_season;
+sub PDLA::plot_season {
   print STDERR "plot_season() deprecated since version 0.5.0. Please use season_m() instead\n";
   my ($self, $d, $opt) = @_;
   $opt and $opt{uc $_} = $opt->{$_} for (keys %$opt);
@@ -992,8 +992,8 @@ Usage:
 
 =cut
 
-*plot_acf = \&PDL::plot_acf;
-sub PDL::plot_acf {
+*plot_acf = \&PDLA::plot_acf;
+sub PDLA::plot_acf {
   my $opt = pop @_
     if ref $_[-1] eq 'HASH';
   my ($self, $h) = @_;
@@ -1031,7 +1031,7 @@ sub PDL::plot_acf {
     $w->close;
   }
   else {
-    carp "Please install PDL::Graphics::PGPLOT::Window for plotting";
+    carp "Please install PDLA::Graphics::PGPLOT::Window for plotting";
   }
 
   return $r;
@@ -1047,7 +1047,7 @@ Schütz, W., & Kolassa, S. (2006). Foresight: advantages of the MAD/Mean ratio o
 
 Copyright (C) 2009 Maggie J. Xiong <maggiexyz users.sourceforge.net>
 
-All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDL distribution.
+All rights reserved. There is no warranty. You are allowed to redistribute this software / documentation as described in the file COPYING in the PDLA distribution.
 
 =cut
 

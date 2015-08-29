@@ -5,16 +5,16 @@ use warnings;
 use Test::More;
 
 BEGIN {
-    use_ok( 'PDL::Stats::Basic' );
-    use_ok( 'PDL::Stats::GLM' );
+    use_ok( 'PDLA::Stats::Basic' );
+    use_ok( 'PDLA::Stats::GLM' );
 }
 
-use PDL::LiteF;
-use PDL::NiceSlice;
+use PDLA::LiteF;
+use PDLA::NiceSlice;
 
-eval { require PDL::Slatec; };
+eval { require PDLA::Slatec; };
 if ($@) {
-  warn "No PDL::Slatec. Fall back on PDL::MatrixOps.\n";
+  warn "No PDLA::Slatec. Fall back on PDLA::MatrixOps.\n";
 }
 
 sub tapprox {
@@ -22,7 +22,7 @@ sub tapprox {
   $eps ||= 1e-6;
   my $diff = abs($a-$b);
     # use max to make it perl scalar
-  ref $diff eq 'PDL' and $diff = $diff->max;
+  ref $diff eq 'PDLA' and $diff = $diff->max;
   return $diff < $eps;
 }
 
@@ -217,8 +217,8 @@ sub t_pca_sorti {
 }
 
 SKIP: {
-  eval { require PDL::Fit::LM; };
-  skip 'no PDL::Fit::LM', 1 if $@;
+  eval { require PDLA::Fit::LM; };
+  skip 'no PDLA::Fit::LM', 1 if $@;
 
   is( tapprox( t_logistic(), 0 ), 1, 'logistic' );
 };
