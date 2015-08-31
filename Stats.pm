@@ -6,7 +6,7 @@ PDLA::Stats - a collection of statistics modules in Perl Data Language, with a q
 
 =cut
 
-$VERSION = '0.71';
+$VERSION = '0.72';
 
 $PDLA::onlinedoc->scan(__FILE__) if $PDLA::onlinedoc;
 
