@@ -22,31 +22,30 @@ WriteMakefile(
       : ()),
     PREREQ_PM => {
         'PDLA::Core'  => 2.008,
-        'PDLA::Graphics::PGPLOT' => 0,
-        'PGPLOT' => 0,
-        'PDLA::Slatec' => 0,
     },
     CONFIGURE_REQUIRES => {
         'PDLA::Core'  => 2.008,
     },
     BUILD_REQUIRES => {
         'PDLA::Core'  => 2.008,
-        'PDLA::Graphics::PGPLOT' => 0,
-        'PGPLOT' => 0,
-        'PDLA::Slatec' => 0,
     },
     TEST_REQUIRES => {
         'PDLA::Core'  => 2.008,
         'Test::More' => 0,
-        'PDLA::Graphics::PGPLOT' => 0,
-        'PGPLOT' => 0,
-        'PDLA::Slatec' => 0,
     },
     DIR                 => ['Basic', 'Distr', 'GLM', 'Kmeans', 'GSL', 'TS'],
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => ['PDLA-Stats-*'] },
     META_MERGE          => {
       "meta-spec" => { version => 2 },
+      prereqs => {
+        runtime => {
+          recommends => {
+            'PDLA::Graphics::PGPLOT' => 0,
+            'PDLA::Slatec' => 0,
+          },
+        },
+      },
       resources => {
         repository => {
           type => 'git',
