@@ -12,6 +12,8 @@ if ($] >= 5.015000 and $] < 5.015009 and !$force) {
     exit;
 }
 
+my $got_PDLA = eval { require PDLA::Core::Dev };
+
 WriteMakefile(
     NAME                => 'PDLA::Stats',
     AUTHOR              => 'Maggie J. Xiong  <maggiexyz users.sourceforge.net>',
@@ -33,7 +35,7 @@ WriteMakefile(
         'PDLA::Core'  => 2.008,
         'Test::More' => 0,
     },
-    DIR                 => ['Basic', 'Distr', 'GLM', 'Kmeans', 'GSL', 'TS'],
+    $got_PDLA ? () : (DIR => []), # just write MYMETA if no PDL
     dist                => { PREOP => 'gsl-config --version && $(PERL) -MPDLA::Core::Dev -e pdlpp_mkgen $(DISTVNAME)' },
     clean               => { FILES => ['PDLA-Stats-*'] },
     META_MERGE          => {
