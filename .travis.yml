@@ -33,7 +33,7 @@ before_install:
   - source ~/travis-perl-helpers/init
   - build-perl
   - perl -V
-  - cpanm --notest ExtUtils::F77 PGPLOT # do not need tests
+  - cpanm --quiet --notest ExtUtils::F77 PGPLOT IO::All # do not need tests
   - if [ "$AUTHOR_TESTING" == 1 ]; then cpanm --quiet --notest CPAN::Changes; fi # for author tests (AUTHOR_TESTING is set to true by default by init)
   - cpanm --force --verbose ExtUtils::ParseXS # we install the latest ExtUtils::ParseXS
   - if [ "$EUMM_BLEAD" == 1 ]; then cpanm --quiet --notest --dev ExtUtils::MakeMaker; fi
