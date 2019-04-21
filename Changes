@@ -1,13 +1,6 @@
-0.75 2016-05-30
-  - no change from 0.74_1
-
-0.74_1 2016-05-28
+0.76 2019-04-21
+  - update against legacy PDL::Stats
   - build updates
-
-0.74 Fri Dec 4 22:09:47 2015 -0500
-  - no change from 0.73_1
-
-0.73_1 Sun Nov 29 10:15:44 2015 -0500
   - Improved support for 64bit indexing (kmx)
   - PDL::GSL::CDF facelift (kmx)
   - kmeans test workaround (kmx)
